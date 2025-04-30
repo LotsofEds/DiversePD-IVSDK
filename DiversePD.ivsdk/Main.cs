@@ -52,6 +52,10 @@ namespace DiversePD.ivsdk
         private static bool FiveStarOn;
         private static bool SixStarOn;
 
+        private static bool canSpawnA;
+        private static bool canSpawnB;
+        private static bool canSpawnC;
+        private static bool canSpawnD;
         private static int listNum;
         private static int vehCount;
 
@@ -532,68 +536,65 @@ namespace DiversePD.ivsdk
         }
         private bool CheckVehicle(string vehToSpawn)
         {
-            if (island == 0)
+            foreach (string vehString in vehBroker)
             {
-                foreach (string vehString in vehBroker)
-                {
-                    if (vehToSpawn == vehString)
-                        return true;
-                }
-                //IVGame.ShowSubtitleMessage("Can't spawn in " + island.ToString());
+                if (vehToSpawn == vehString)
+                    canSpawnA = true;
+            }
+            foreach (string vehString in vehBohan)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnB = true;
+            }
+            foreach (string vehString in vehAlgonquin)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnC = true;
+            }
+            foreach (string vehString in vehAlderney)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnD = true;
+            }
+
+            if (island == 0 && canSpawnA)
+            {
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
+                return true;
+            }
+
+            else if (island == 1 && canSpawnB)
+            {
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
+                return true;
+            }
+
+            else if (island == 2 && canSpawnC)
+            {
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
+                return true;
+            }
+
+            else if (island == 3 && canSpawnD)
+            {
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
+                return true;
+            }
+
+            else if (!canSpawnA && !canSpawnB && !canSpawnC && !canSpawnD)
+            {
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in any island");
+                return true;
+            }
+            else
+            {
                 if (vehType < (vehCount - 1))
                     vehType++;
                 else
                     vehType = 0;
+                //IVGame.ShowSubtitleMessage(vehToSpawn + " can't spawn in " + island.ToString());
                 return false;
             }
-
-            else if (island == 1)
-            {
-                foreach (string vehString in vehBohan)
-                {
-                    if (vehToSpawn == vehString)
-                        return true;
-                }
-                //IVGame.ShowSubtitleMessage("Can't spawn in " + island.ToString());
-                if (vehType < (vehCount - 1))
-                    vehType++;
-                else
-                    vehType = 0;
-                return false;
-            }
-
-            else if (island == 2)
-            {
-                foreach (string vehString in vehAlgonquin)
-                {
-                    if (vehToSpawn == vehString)
-                        return true;
-                }
-                //IVGame.ShowSubtitleMessage("Can't spawn in " + island.ToString());
-                if (vehType < (vehCount - 1))
-                    vehType++;
-                else
-                    vehType = 0;
-                return false;
-            }
-
-            else if (island == 3)
-            {
-                foreach (string vehString in vehAlderney)
-                {
-                    if (vehToSpawn == vehString)
-                        return true;
-                }
-                //IVGame.ShowSubtitleMessage("Can't spawn in " + island.ToString());
-                if (vehType < (vehCount - 1))
-                    vehType++;
-                else
-                    vehType = 0;
-                return false;
-            }
-
-            //IVGame.ShowSubtitleMessage("Can spawn in any island");
-            return true;
         }
         private void Main_Tick(object sender, EventArgs e)
         {
@@ -616,6 +617,10 @@ namespace DiversePD.ivsdk
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsA[listNum];
 
@@ -642,6 +647,10 @@ namespace DiversePD.ivsdk
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsB[listNum];
 
@@ -668,6 +677,10 @@ namespace DiversePD.ivsdk
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsC[listNum];
 
@@ -694,6 +707,10 @@ namespace DiversePD.ivsdk
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsD[listNum];
 
@@ -715,11 +732,15 @@ namespace DiversePD.ivsdk
                     vehCount = vehModelsE.Count();
                     listNum = (vehCount - (vehCount - vehType));
 
-                    if (!CheckVehicle(vehModelsA[listNum]))
+                    if (!CheckVehicle(vehModelsE[listNum]))
                         return;
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsE[listNum];
 
@@ -741,11 +762,15 @@ namespace DiversePD.ivsdk
                     vehCount = vehModelsF.Count();
                     listNum = (vehCount - (vehCount - vehType));
 
-                    if (!CheckVehicle(vehModelsA[listNum]))
+                    if (!CheckVehicle(vehModelsF[listNum]))
                         return;
 
                     else
                     {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         isSpawning = true;
                         carModel = vehModelsF[listNum];
 
