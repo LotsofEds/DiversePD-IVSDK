@@ -30,7 +30,12 @@ namespace DiversePD.ivsdk
         private static Vector3 vPos;
         private static Vector3 nodePos;
         private static float nodeHdng;
+        private static bool debug;
         IVVehicle veh;
+
+
+        private static uint c1;
+        private static uint c2;
 
         private static string carModel;
         private static string driverModel;
@@ -124,7 +129,21 @@ namespace DiversePD.ivsdk
         private static readonly List<string> vehBroker = new List<string>();
         private static readonly List<string> vehBohan = new List<string>();
         private static readonly List<string> vehAlgonquin = new List<string>();
-        private static readonly List<string> vehAlderney= new List<string>();
+        private static readonly List<string> vehAlderney = new List<string>();
+
+        private static readonly List<string> PedModels = new List<string>();
+
+        private static uint headComp;
+        private static uint upprComp;
+        private static uint lowrComp;
+        private static uint suseComp;
+        private static uint handComp;
+        private static uint feetComp;
+        private static uint jcktComp;
+        private static uint hairComp;
+        private static uint sus2Comp;
+        private static uint teefComp;
+        private static uint faceComp;
 
         public static DelayedCalling TheDelayedCaller;
         public Main()
@@ -147,6 +166,10 @@ namespace DiversePD.ivsdk
         {
             LoadINI(Settings);
         }
+        private void LoadComponents(SettingsFile settings)
+        {
+            string HeadString = settings.GetValue(driverModel, "Head Models", "");
+        }
 
         private void LoadINI(SettingsFile settings)
         {
@@ -158,7 +181,12 @@ namespace DiversePD.ivsdk
             FourStarOn = settings.GetBoolean("4 STAR", "Enable", false);
             FiveStarOn = settings.GetBoolean("5 STAR", "Enable", false);
             SixStarOn = settings.GetBoolean("6 STAR", "Enable", false);
+            debug = settings.GetBoolean("MAIN", "Debug", false);
 
+            /*PedModels.Clear();
+            string PedString = settings.GetValue("MAIN", "Ped Models Used", "");
+            foreach (var modelName in PedString.Split(','))
+                PedModels.Add(modelName.ToString());*/
 
             vehModelsA.Clear();
             driverModelsA.Clear();
@@ -596,6 +624,12 @@ namespace DiversePD.ivsdk
                 return false;
             }
         }
+
+        private void CheckPedComponents(string pedModel, int pedHandl)
+        {
+            if (pedModel == "M_Y_COP")
+                SET_CHAR_COMPONENT_VARIATION(pedHandl, 0, 2, 0);
+        }
         private void Main_Tick(object sender, EventArgs e)
         {
             PlayerPed = IVPed.FromUIntPtr(IVPlayerInfo.FindThePlayerPed());
@@ -610,10 +644,19 @@ namespace DiversePD.ivsdk
                 if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 1) && OneStarOn)
                 {
                     vehCount = vehModelsA.Count();
+                    if (vehType > vehModelsA.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsA[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -640,10 +683,19 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 1) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 2) && TwoStarOn)
                 {
                     vehCount = vehModelsB.Count();
+                    if (vehType > vehModelsB.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsB[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -670,10 +722,19 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 2) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 3) && ThreeStarOn)
                 {
                     vehCount = vehModelsC.Count();
+                    if (vehType > vehModelsC.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsC[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -700,10 +761,19 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 3) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 4) && FourStarOn)
                 {
                     vehCount = vehModelsD.Count();
+                    if (vehType > vehModelsD.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsD[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -730,10 +800,19 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 4) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 5) && FiveStarOn)
                 {
                     vehCount = vehModelsE.Count();
+                    if (vehType > vehModelsE.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsE[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -760,10 +839,19 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 5) && SixStarOn)
                 {
                     vehCount = vehModelsF.Count();
+                    if (vehType > vehModelsF.Count())
+                        vehType = 0;
+
                     listNum = (vehCount - (vehCount - vehType));
 
                     if (!CheckVehicle(vehModelsF[listNum]))
+                    {
+                        canSpawnA = false;
+                        canSpawnB = false;
+                        canSpawnC = false;
+                        canSpawnD = false;
                         return;
+                    }
 
                     else
                     {
@@ -812,9 +900,6 @@ namespace DiversePD.ivsdk
                 if (HAS_MODEL_LOADED(GET_HASH_KEY(carModel)) && HAS_MODEL_LOADED(GET_HASH_KEY(driverModel)))
                 {
                     CREATE_CAR(GET_HASH_KEY(carModel), PlayerPos.Around(SpawnDist), out v, true);
-                    CREATE_CHAR_INSIDE_CAR(v, 3, (uint)GET_HASH_KEY(driverModel), out p1);
-                    if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
-                        CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
 
                     GET_CAR_COORDINATES(v, out vPos);
                     GET_CLOSEST_CAR_NODE_WITH_HEADING(vPos, out nodePos, out nodeHdng);
@@ -824,7 +909,14 @@ namespace DiversePD.ivsdk
                     veh = NativeWorld.GetVehicleInstanceFromHandle(v);
                     veh.PlaceOnGroundProperly();
 
-                    //IVGame.ShowSubtitleMessage("Spawned " + carModel + "  " + vehType.ToString() + "  " + vehCount.ToString());
+                    CREATE_CHAR_INSIDE_CAR(v, 3, (uint)GET_HASH_KEY(driverModel), out p1);
+                    if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
+                        CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
+
+                    CheckPedComponents(driverModel, p1);
+                    CheckPedComponents(pass1Model, p2);
+                    if (debug)
+                        IVGame.ShowSubtitleMessage("Spawned " + carModel + "  " + vehType.ToString() + "  " + vehCount.ToString());
                     if (dWeap > 0)
                         GIVE_WEAPON_TO_CHAR(p1, dWeap, -1, true);
                     if (p1Weap > 0)
@@ -852,6 +944,9 @@ namespace DiversePD.ivsdk
                             CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
                         if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
                             CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
+
+                        CheckPedComponents(pass2Model, p3);
+                        CheckPedComponents(pass3Model, p4);
 
                         if (p2Weap > 0)
                             GIVE_WEAPON_TO_CHAR(p3, p2Weap, -1, true);
