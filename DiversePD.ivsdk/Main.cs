@@ -628,7 +628,7 @@ namespace DiversePD.ivsdk
         private void CheckPedComponents(string pedModel, int pedHandl)
         {
             if (pedModel == "M_Y_COP")
-                SET_CHAR_COMPONENT_VARIATION(pedHandl, 0, 2, 0);
+                SET_CHAR_COMPONENT_VARIATION(pedHandl, 2, 0, 0);
         }
         private void Main_Tick(object sender, EventArgs e)
         {
