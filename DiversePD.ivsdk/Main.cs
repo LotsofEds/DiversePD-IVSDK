@@ -644,7 +644,7 @@ namespace DiversePD.ivsdk
                 if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 1) && OneStarOn)
                 {
                     vehCount = vehModelsA.Count();
-                    if (vehType > vehModelsA.Count())
+                    if (vehType >= vehModelsA.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
@@ -683,7 +683,7 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 1) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 2) && TwoStarOn)
                 {
                     vehCount = vehModelsB.Count();
-                    if (vehType > vehModelsB.Count())
+                    if (vehType >= vehModelsB.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
@@ -722,7 +722,7 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 2) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 3) && ThreeStarOn)
                 {
                     vehCount = vehModelsC.Count();
-                    if (vehType > vehModelsC.Count())
+                    if (vehType >= vehModelsC.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
@@ -761,7 +761,7 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 3) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 4) && FourStarOn)
                 {
                     vehCount = vehModelsD.Count();
-                    if (vehType > vehModelsD.Count())
+                    if (vehType >= vehModelsD.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
@@ -800,7 +800,7 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 4) && !IS_WANTED_LEVEL_GREATER(PlayerIndex, 5) && FiveStarOn)
                 {
                     vehCount = vehModelsE.Count();
-                    if (vehType > vehModelsE.Count())
+                    if (vehType >= vehModelsE.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
@@ -839,7 +839,7 @@ namespace DiversePD.ivsdk
                 else if (IS_WANTED_LEVEL_GREATER(PlayerIndex, 5) && SixStarOn)
                 {
                     vehCount = vehModelsF.Count();
-                    if (vehType > vehModelsF.Count())
+                    if (vehType >= vehModelsF.Count())
                         vehType = 0;
 
                     listNum = (vehCount - (vehCount - vehType));
