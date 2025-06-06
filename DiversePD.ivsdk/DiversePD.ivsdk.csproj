@@ -31,8 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ClonksCodingLib.GTAIV">
-      <HintPath>..\..\..\..\..\..\Games\CCL 1.9\ClonksCodingLib.GTAIV.dll</HintPath>
+    <Reference Include="ClonksCodingLib.GTAIV, Version=1.9.0.38745, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Games\CCL\ClonksCodingLib.GTAIV.dll</HintPath>
     </Reference>
     <Reference Include="IVSDKDotNetWrapper">
       <HintPath>..\..\..\..\..\..\Games\IVSDK\IVSDKDotNetWrapper.dll</HintPath>
