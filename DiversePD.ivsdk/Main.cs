@@ -630,6 +630,19 @@ namespace DiversePD.ivsdk
             if (pedModel == "M_Y_COP")
                 SET_CHAR_COMPONENT_VARIATION(pedHandl, 2, 0, 0);
         }
+        private void SpawnPedInVeh(string pModel, int pedHandle, int pWeap)
+        {
+            CheckPedComponents(pModel, pedHandle);
+            if (pWeap > 0)
+                GIVE_WEAPON_TO_CHAR(pedHandle, pWeap, -1, true);
+
+            SET_CHAR_WILL_DO_DRIVEBYS(pedHandle, true);
+            SET_PED_PATH_MAY_DROP_FROM_HEIGHT(pedHandle, true);
+            SET_PED_PATH_MAY_USE_CLIMBOVERS(pedHandle, true);
+            SET_PED_PATH_MAY_USE_LADDERS(pedHandle, true);
+
+            MARK_CHAR_AS_NO_LONGER_NEEDED(pedHandle);
+        }
         private void Main_Tick(object sender, EventArgs e)
         {
             PlayerPed = IVPed.FromUIntPtr(IVPlayerInfo.FindThePlayerPed());
@@ -910,64 +923,35 @@ namespace DiversePD.ivsdk
                     veh.PlaceOnGroundProperly();
 
                     CREATE_CHAR_INSIDE_CAR(v, 3, (uint)GET_HASH_KEY(driverModel), out p1);
-                    if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
-                        CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
 
-                    CheckPedComponents(driverModel, p1);
-                    CheckPedComponents(pass1Model, p2);
+                    SpawnPedInVeh(driverModel, p1, dWeap);
+
+                    if (veh.GetMaximumNumberOfPassengers() > 0)
+                    {
+                        if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
+                            CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
+
+                        SpawnPedInVeh(pass1Model, p2, p1Weap);
+
+                        if (veh.GetMaximumNumberOfPassengers() > 1)
+                        {
+                            if (HAS_MODEL_LOADED(GET_HASH_KEY(pass2Model)))
+                                CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
+
+                            SpawnPedInVeh(pass2Model, p3, p2Weap);
+                        }
+                        if (veh.GetMaximumNumberOfPassengers() > 2)
+                        {
+                            if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
+                                CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
+
+                            SpawnPedInVeh(pass3Model, p4, p3Weap);
+                        }
+                    }
                     if (debug)
                         IVGame.ShowSubtitleMessage("Spawned " + carModel + "  " + vehType.ToString() + "  " + vehCount.ToString());
-                    if (dWeap > 0)
-                        GIVE_WEAPON_TO_CHAR(p1, dWeap, -1, true);
-                    if (p1Weap > 0)
-                        GIVE_WEAPON_TO_CHAR(p2, p1Weap, -1, true);
-
-                    SET_CHAR_WILL_DO_DRIVEBYS(p1, true);
-                    SET_CHAR_WILL_DO_DRIVEBYS(p2, true);
-
-                    SET_PED_PATH_MAY_DROP_FROM_HEIGHT(p1, true);
-                    SET_PED_PATH_MAY_DROP_FROM_HEIGHT(p2, true);
-
-                    SET_PED_PATH_MAY_USE_CLIMBOVERS(p1, true);
-                    SET_PED_PATH_MAY_USE_CLIMBOVERS(p2, true);
-
-                    SET_PED_PATH_MAY_USE_LADDERS(p1, true);
-                    SET_PED_PATH_MAY_USE_LADDERS(p2, true);
 
                     MARK_CAR_AS_NO_LONGER_NEEDED(v);
-                    MARK_CHAR_AS_NO_LONGER_NEEDED(p1);
-                    MARK_CHAR_AS_NO_LONGER_NEEDED(p2);
-
-                    if (veh.GetMaximumNumberOfPassengers() > 1)
-                    {
-                        if (HAS_MODEL_LOADED(GET_HASH_KEY(pass2Model)))
-                            CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
-                        if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
-                            CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
-
-                        CheckPedComponents(pass2Model, p3);
-                        CheckPedComponents(pass3Model, p4);
-
-                        if (p2Weap > 0)
-                            GIVE_WEAPON_TO_CHAR(p3, p2Weap, -1, true);
-                        if (p3Weap > 0)
-                            GIVE_WEAPON_TO_CHAR(p4, p3Weap, -1, true);
-
-                        SET_CHAR_WILL_DO_DRIVEBYS(p3, true);
-                        SET_CHAR_WILL_DO_DRIVEBYS(p4, true);
-
-                        SET_PED_PATH_MAY_DROP_FROM_HEIGHT(p3, true);
-                        SET_PED_PATH_MAY_DROP_FROM_HEIGHT(p4, true);
-
-                        SET_PED_PATH_MAY_USE_CLIMBOVERS(p3, true);
-                        SET_PED_PATH_MAY_USE_CLIMBOVERS(p4, true);
-
-                        SET_PED_PATH_MAY_USE_LADDERS(p3, true);
-                        SET_PED_PATH_MAY_USE_LADDERS(p4, true);
-
-                        MARK_CHAR_AS_NO_LONGER_NEEDED(p3);
-                        MARK_CHAR_AS_NO_LONGER_NEEDED(p4);
-                    }
 
                     if (vehType < (vehCount - 1))
                         vehType++;
