@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Games\Grand Theft Auto IV - CE - Downgraded\GTAIV.exe</StartProgram>
-    <StartWorkingDirectory>C:\Games\Grand Theft Auto IV - CE - Downgraded\</StartWorkingDirectory>
+    <StartProgram>C:\Games\GTA IV\GTAIV.exe</StartProgram>
+    <StartWorkingDirectory>C:\Games\GTA IV\</StartWorkingDirectory>
   </PropertyGroup>
 </Project>

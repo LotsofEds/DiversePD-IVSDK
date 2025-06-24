@@ -6,12 +6,12 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using IVSDKDotNet;
 using static IVSDKDotNet.Native.Natives;
 using CCL;
-using CCL.GTAIV;
 using IVSDKDotNet.Enums;
 using System.Runtime;
+using System.Xml.Linq;
+using System.Runtime.CompilerServices;
 
 namespace DiversePD.ivsdk
 {
@@ -21,6 +21,9 @@ namespace DiversePD.ivsdk
         public static int PlayerIndex { get; set; }
         public static int PlayerHandle { get; set; }
         public static Vector3 PlayerPos { get; set; }
+
+        private static uint currEp;
+
         private static int v;
         private static int p1;
         private static int p2;
@@ -32,7 +35,6 @@ namespace DiversePD.ivsdk
         private static float nodeHdng;
         private static bool debug;
         IVVehicle veh;
-
 
         private static uint c1;
         private static uint c2;
@@ -56,6 +58,10 @@ namespace DiversePD.ivsdk
         private static bool FourStarOn;
         private static bool FiveStarOn;
         private static bool SixStarOn;
+
+        private static bool canSpawnIV;
+        private static bool canSpawnTLAD;
+        private static bool canSpawnTBOGT;
 
         private static bool canSpawnA;
         private static bool canSpawnB;
@@ -126,6 +132,14 @@ namespace DiversePD.ivsdk
         private static readonly List<eWeaponType> pass2WeapF = new List<eWeaponType>();
         private static readonly List<eWeaponType> pass3WeapF = new List<eWeaponType>();
 
+        private static readonly List<string> vehIV = new List<string>();
+        private static readonly List<string> vehTLAD = new List<string>();
+        private static readonly List<string> vehTBOGT = new List<string>();
+
+        private static readonly List<string> pedIV = new List<string>();
+        private static readonly List<string> pedTLAD = new List<string>();
+        private static readonly List<string> pedTBOGT = new List<string>();
+
         private static readonly List<string> vehBroker = new List<string>();
         private static readonly List<string> vehBohan = new List<string>();
         private static readonly List<string> vehAlgonquin = new List<string>();
@@ -133,19 +147,37 @@ namespace DiversePD.ivsdk
 
         private static readonly List<string> PedModels = new List<string>();
 
-        private static uint headComp;
-        private static uint upprComp;
-        private static uint lowrComp;
-        private static uint suseComp;
-        private static uint handComp;
-        private static uint feetComp;
-        private static uint jcktComp;
-        private static uint hairComp;
-        private static uint sus2Comp;
-        private static uint teefComp;
-        private static uint faceComp;
+        private static bool sectionExists;
+        private static int compSpawnType;
+        private static int propSpawnType;
+
+        private static List<int> HeadRainComps = new List<int>();
+        private static List<int> UpperRainComps = new List<int>();
+        private static List<int> LowerRainComps = new List<int>();
+        private static List<int> SuseRainComps = new List<int>();
+        private static List<int> HandRainComps = new List<int>();
+        private static List<int> FeetRainComps = new List<int>();
+        private static List<int> JacketRainComps = new List<int>();
+        private static List<int> HairRainComps = new List<int>();
+        private static List<int> Sus2RainComps = new List<int>();
+        private static List<int> TeefRainComps = new List<int>();
+        private static List<int> FaceRainComps = new List<int>();
+
+        private static List<int> HeadRainProps = new List<int>();
+        private static List<int> UpperRainProps = new List<int>();
+        private static List<int> LowerRainProps = new List<int>();
+        private static List<int> SuseRainProps = new List<int>();
+        private static List<int> HandRainProps = new List<int>();
+        private static List<int> FeetRainProps = new List<int>();
+        private static List<int> JacketRainProps = new List<int>();
+        private static List<int> HairRainProps = new List<int>();
+        private static List<int> Sus2RainProps = new List<int>();
+        private static List<int> TeefRainProps = new List<int>();
+        private static List<int> FaceRainProps = new List<int>();
 
         public static DelayedCalling TheDelayedCaller;
+        private static eWeather Wthr;
+        private static bool isRaining => (Wthr == eWeather.WEATHER_RAINING || Wthr == eWeather.WEATHER_LIGHTNING || Wthr == eWeather.WEATHER_DRIZZLE);
         public Main()
         {
             Uninitialize += Main_Uninitialize;
@@ -161,16 +193,10 @@ namespace DiversePD.ivsdk
                 TheDelayedCaller = null;
             }
         }
-
         private void Main_Initialized(object sender, EventArgs e)
         {
             LoadINI(Settings);
         }
-        private void LoadComponents(SettingsFile settings)
-        {
-            string HeadString = settings.GetValue(driverModel, "Head Models", "");
-        }
-
         private void LoadINI(SettingsFile settings)
         {
             timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn", 20);
@@ -543,6 +569,36 @@ namespace DiversePD.ivsdk
                 }
             }
 
+            vehIV.Clear();
+            vehTLAD.Clear();
+            vehTBOGT.Clear();
+
+            string vehIVString = settings.GetValue("MAIN", "IVVehModels", "");
+            string vehTLADString = settings.GetValue("MAIN", "TLADVehModels", "");
+            string vehTBOGTString = settings.GetValue("MAIN", "TBOGTVehModels", "");
+
+            foreach (var modelName in vehIVString.Split(','))
+                vehIV.Add(modelName.ToString());
+            foreach (var modelName in vehTLADString.Split(','))
+                vehTLAD.Add(modelName.ToString());
+            foreach (var modelName in vehTBOGTString.Split(','))
+                vehTBOGT.Add(modelName.ToString());
+
+            pedIV.Clear();
+            pedTLAD.Clear();
+            pedTBOGT.Clear();
+
+            string pedIVString = settings.GetValue("MAIN", "IVPedModels", "");
+            string pedTLADString = settings.GetValue("MAIN", "TLADPedModels", "");
+            string pedTBOGTString = settings.GetValue("MAIN", "TBOGTPedModels", "");
+
+            foreach (var modelName in pedIVString.Split(','))
+                pedIV.Add(modelName.ToString());
+            foreach (var modelName in pedTLADString.Split(','))
+                pedTLAD.Add(modelName.ToString());
+            foreach (var modelName in pedTBOGTString.Split(','))
+                pedTBOGT.Add(modelName.ToString());
+
             vehBroker.Clear();
             vehBohan.Clear();
             vehAlgonquin.Clear();
@@ -561,6 +617,85 @@ namespace DiversePD.ivsdk
                 vehAlgonquin.Add(modelName.ToString());
             foreach (var modelName in AlderString.Split(','))
                 vehAlderney.Add(modelName.ToString());
+        }
+        private void ClearSpawnConditions()
+        {
+            canSpawnIV = false;
+            canSpawnTLAD = false;
+            canSpawnTBOGT = false;
+
+            canSpawnA = false;
+            canSpawnB = false;
+            canSpawnC = false;
+            canSpawnD = false;
+        }
+        private bool CheckEpisodeVehicle(string vehToSpawn)
+        {
+            foreach (string vehString in vehIV)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnIV = true;
+            }
+            foreach (string vehString in vehTLAD)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnTLAD = true;
+            }
+            foreach (string vehString in vehTBOGT)
+            {
+                if (vehToSpawn == vehString)
+                    canSpawnTBOGT = true;
+            }
+            if (canSpawnIV && currEp == 0)
+                return true;
+            else if (canSpawnTLAD && currEp == 1)
+                return true;
+            else if (canSpawnTBOGT && currEp == 2)
+                return true;
+            else if (!canSpawnIV && !canSpawnTLAD && !canSpawnTBOGT)
+                return true;
+            else
+            {
+                if (vehType < (vehCount - 1))
+                    vehType++;
+                else
+                    vehType = 0;
+                return false;
+            }
+        }
+        private bool CheckEpisodePed(string pedToSpawn)
+        {
+            foreach (string pedString in pedIV)
+            {
+                if (pedToSpawn == pedString)
+                    canSpawnIV = true;
+            }
+            foreach (string pedString in pedTLAD)
+            {
+                if (pedToSpawn == pedString)
+                    canSpawnTLAD = true;
+            }
+            foreach (string pedString in pedTBOGT)
+            {
+                if (pedToSpawn == pedString)
+                    canSpawnTBOGT = true;
+            }
+            if (canSpawnIV && currEp == 0)
+                return true;
+            else if (canSpawnTLAD && currEp == 1)
+                return true;
+            else if (canSpawnTBOGT && currEp == 2)
+                return true;
+            else if (!canSpawnIV && !canSpawnTLAD && !canSpawnTBOGT)
+                return true;
+            else
+            {
+                if (vehType < (vehCount - 1))
+                    vehType++;
+                else
+                    vehType = 0;
+                return false;
+            }
         }
         private bool CheckVehicle(string vehToSpawn)
         {
@@ -586,49 +721,220 @@ namespace DiversePD.ivsdk
             }
 
             if (island == 0 && canSpawnA)
-            {
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
                 return true;
-            }
 
             else if (island == 1 && canSpawnB)
-            {
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
                 return true;
-            }
 
             else if (island == 2 && canSpawnC)
-            {
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
                 return true;
-            }
 
             else if (island == 3 && canSpawnD)
-            {
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in " + island.ToString());
                 return true;
-            }
 
             else if (!canSpawnA && !canSpawnB && !canSpawnC && !canSpawnD)
-            {
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can spawn in any island");
                 return true;
-            }
+
             else
             {
                 if (vehType < (vehCount - 1))
                     vehType++;
                 else
                     vehType = 0;
-                //IVGame.ShowSubtitleMessage(vehToSpawn + " can't spawn in " + island.ToString());
                 return false;
             }
         }
+        private void LoadComponents(SettingsFile settings, string pedModel)
+        {
+            HeadRainComps.Clear();
+            UpperRainComps.Clear();
+            LowerRainComps.Clear();
+            SuseRainComps.Clear();
+            HandRainComps.Clear();
+            FeetRainComps.Clear();
+            JacketRainComps.Clear();
+            HairRainComps.Clear();
+            Sus2RainComps.Clear();
+            TeefRainComps.Clear();
+            FaceRainComps.Clear();
 
+            HeadRainProps.Clear();
+            UpperRainProps.Clear();
+            LowerRainProps.Clear();
+            SuseRainProps.Clear();
+            HandRainProps.Clear();
+            FeetRainProps.Clear();
+            JacketRainProps.Clear();
+            HairRainProps.Clear();
+            Sus2RainProps.Clear();
+            TeefRainProps.Clear();
+            FaceRainProps.Clear();
+
+            if (settings.DoesSectionExists(pedModel))
+            {
+                sectionExists = true;
+
+                int RainComponentSpawnType = settings.GetInteger(pedModel, "RainComponentSpawnType", 0);
+                int RainPropSpawnType = settings.GetInteger(pedModel, "RainPropSpawnType", 0);
+
+                string HeadRainCompString = settings.GetValue(pedModel, "HeadRainComps", "");
+                string UpperRainCompString = settings.GetValue(pedModel, "UpperRainComps", "");
+                string LowerRainCompString = settings.GetValue(pedModel, "LowerRainComps", "");
+                string SuseRainCompString = settings.GetValue(pedModel, "SuseRainComps", "");
+                string HandRainCompString = settings.GetValue(pedModel, "HandRainComps", "");
+                string FeetRainCompString = settings.GetValue(pedModel, "FeetRainComps", "");
+                string JacketRainCompString = settings.GetValue(pedModel, "JacketRainComps", "");
+                string HairRainCompString = settings.GetValue(pedModel, "HairRainComps", "");
+                string Sus2RainCompString = settings.GetValue(pedModel, "Sus2RainComps", "");
+                string TeefRainCompString = settings.GetValue(pedModel, "TeefRainComps", "");
+                string FaceRainCompString = settings.GetValue(pedModel, "FaceRainComps", "");
+
+                string HeadRainPropString = settings.GetValue(pedModel, "HeadRainComps", "");
+                string UpperRainPropString = settings.GetValue(pedModel, "UpperRainComps", "");
+                string LowerRainPropString = settings.GetValue(pedModel, "LowerRainComps", "");
+                string SuseRainPropString = settings.GetValue(pedModel, "SuseRainComps", "");
+                string HandRainPropString = settings.GetValue(pedModel, "HandRainComps", "");
+                string FeetRainPropString = settings.GetValue(pedModel, "FeetRainComps", "");
+                string JacketRainPropString = settings.GetValue(pedModel, "JacketRainComps", "");
+                string HairRainPropString = settings.GetValue(pedModel, "HairRainComps", "");
+                string Sus2RainPropString = settings.GetValue(pedModel, "Sus2RainComps", "");
+                string TeefRainPropString = settings.GetValue(pedModel, "TeefRainComps", "");
+                string FaceRainPropString = settings.GetValue(pedModel, "FaceRainComps", "");
+
+                HeadRainComps = HeadRainCompString.Split(',').Select(int.Parse).ToList();
+                UpperRainComps = UpperRainCompString.Split(',').Select(int.Parse).ToList();
+                LowerRainComps = LowerRainCompString.Split(',').Select(int.Parse).ToList();
+                SuseRainComps = SuseRainCompString.Split(',').Select(int.Parse).ToList();
+                HandRainComps = HandRainCompString.Split(',').Select(int.Parse).ToList();
+                FeetRainComps = FeetRainCompString.Split(',').Select(int.Parse).ToList();
+                JacketRainComps = JacketRainCompString.Split(',').Select(int.Parse).ToList();
+                HairRainComps = HairRainCompString.Split(',').Select(int.Parse).ToList();
+                Sus2RainComps = Sus2RainCompString.Split(',').Select(int.Parse).ToList();
+                TeefRainComps = TeefRainCompString.Split(',').Select(int.Parse).ToList();
+                FaceRainComps = FaceRainCompString.Split(',').Select(int.Parse).ToList();
+
+                HeadRainProps = HeadRainPropString.Split(',').Select(int.Parse).ToList();
+                UpperRainProps = UpperRainPropString.Split(',').Select(int.Parse).ToList();
+                LowerRainProps = LowerRainPropString.Split(',').Select(int.Parse).ToList();
+                SuseRainProps = SuseRainPropString.Split(',').Select(int.Parse).ToList();
+                HandRainProps = HandRainPropString.Split(',').Select(int.Parse).ToList();
+                FeetRainProps = FeetRainPropString.Split(',').Select(int.Parse).ToList();
+                JacketRainProps = JacketRainPropString.Split(',').Select(int.Parse).ToList();
+                HairRainProps = HairRainPropString.Split(',').Select(int.Parse).ToList();
+                Sus2RainProps = Sus2RainPropString.Split(',').Select(int.Parse).ToList();
+                TeefRainProps = TeefRainPropString.Split(',').Select(int.Parse).ToList();
+                FaceRainProps = FaceRainPropString.Split(',').Select(int.Parse).ToList();
+
+                compSpawnType = RainComponentSpawnType;
+                propSpawnType = RainPropSpawnType;
+            }
+            else
+                sectionExists = false;
+        }
         private void CheckPedComponents(string pedModel, int pedHandl)
         {
-            if (pedModel == "M_Y_COP")
-                SET_CHAR_COMPONENT_VARIATION(pedHandl, 2, 0, 0);
+            /*if (pedModel == "M_Y_COP")
+                SET_CHAR_COMPONENT_VARIATION(pedHandl, 2, 0, 0);*/
+            LoadComponents(Settings, pedModel);
+
+            if (sectionExists)
+            {
+                Wthr = NativeWorld.CurrentWeather;
+                int i = 0;
+                List<int> compList = null;
+                List<int> propList = null;
+
+                for (i = 0; i < 11; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            compList = HeadRainComps;
+                            propList = HeadRainProps;
+                            break;
+                        case 1:
+                            compList = UpperRainComps;
+                            propList = UpperRainProps;
+                            break;
+                        case 2:
+                            compList = LowerRainComps;
+                            propList = LowerRainProps;
+                            break;
+                        case 3:
+                            compList = SuseRainComps;
+                            propList = SuseRainProps;
+                            break;
+                        case 4:
+                            compList = HandRainComps;
+                            propList = HandRainProps;
+                            break;
+                        case 5:
+                            compList = FeetRainComps;
+                            propList = FeetRainProps;
+                            break;
+                        case 6:
+                            compList = JacketRainComps;
+                            propList = JacketRainProps;
+                            break;
+                        case 7:
+                            compList = HairRainComps;
+                            propList = HairRainProps;
+                            break;
+                        case 8:
+                            compList = Sus2RainComps;
+                            propList = Sus2RainProps;
+                            break;
+                        case 9:
+                            compList = TeefRainComps;
+                            propList = TeefRainProps;
+                            break;
+                        case 10:
+                            compList = FaceRainComps;
+                            propList = FaceRainProps;
+                            break;
+                    }
+
+                    int spawnChance = GENERATE_RANDOM_INT_IN_RANGE(0, 2);
+                    int compIndex = GENERATE_RANDOM_INT_IN_RANGE(0, compList.Count());
+                    uint compVar = GET_CHAR_DRAWABLE_VARIATION(pedHandl, i);
+                    GET_CHAR_PROP_INDEX(pedHandl, i, out int pedProp);
+
+                    int propIndex = GENERATE_RANDOM_INT_IN_RANGE(0, propList.Count());
+
+                    if (compSpawnType == 0)
+                        spawnChance = 0;
+                    else if (compSpawnType == 2)
+                        spawnChance = 1;
+
+                    if (compList[compIndex] != -1 && spawnChance != 0 && isRaining)
+                    {
+                        uint texCount = GET_NUMBER_OF_CHAR_TEXTURE_VARIATIONS(pedHandl, (uint)i, (uint)compList[compIndex]);
+                        int texVar = GENERATE_RANDOM_INT_IN_RANGE(0, (int)texCount);
+
+                        SET_CHAR_COMPONENT_VARIATION(pedHandl, (uint)i, (uint)compList[compIndex], (uint)texVar);
+                        //SET_CHAR_PROP_INDEX();
+                    }
+
+                    else
+                    {
+                        if (compVar == compList[compIndex])
+                            SET_CHAR_DEFAULT_COMPONENT_VARIATION(pedHandl);
+                    }
+
+                    if (propSpawnType == 0)
+                        spawnChance = 0;
+                    else if (propSpawnType == 2)
+                        spawnChance = 1;
+
+                    if (propList[propIndex] != -1 && spawnChance != 0 && isRaining)
+                        SET_CHAR_PROP_INDEX(pedHandl, (uint)i, (uint)propList[propIndex]);
+                    else
+                    {
+                        if (pedProp == propList[propIndex])
+                            CLEAR_CHAR_PROP(pedHandl, i);
+                    }
+                }
+            }
         }
         private void SpawnPedInVeh(string pModel, int pedHandle, int pWeap)
         {
@@ -650,6 +956,8 @@ namespace DiversePD.ivsdk
             PlayerHandle = PlayerPed.GetHandle();
             PlayerPos = PlayerPed.Matrix.Pos;
 
+            currEp = GET_CURRENT_EPISODE();
+
             if (!isSpawning)
             {
                 island = GET_MAP_AREA_FROM_COORDS(PlayerPos.X, PlayerPos.Y, PlayerPos.Z);
@@ -662,21 +970,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsA[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsA[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsA[listNum];
 
@@ -701,21 +1008,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsB[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsB[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsB[listNum];
 
@@ -740,21 +1046,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsC[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsC[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsC[listNum];
 
@@ -779,21 +1084,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsD[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsD[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsD[listNum];
 
@@ -818,21 +1122,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsE[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsE[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsE[listNum];
 
@@ -857,21 +1160,20 @@ namespace DiversePD.ivsdk
 
                     listNum = (vehCount - (vehCount - vehType));
 
+                    if (!CheckEpisodeVehicle(vehModelsF[listNum]))
+                    {
+                        ClearSpawnConditions();
+                        return;
+                    }
                     if (!CheckVehicle(vehModelsF[listNum]))
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         return;
                     }
 
                     else
                     {
-                        canSpawnA = false;
-                        canSpawnB = false;
-                        canSpawnC = false;
-                        canSpawnD = false;
+                        ClearSpawnConditions();
                         isSpawning = true;
                         carModel = vehModelsF[listNum];
 
@@ -890,7 +1192,6 @@ namespace DiversePD.ivsdk
             }
             TheDelayedCaller.Process();
         }
-
         private void SpawnPigs()
         {
             if (!HAS_MODEL_LOADED(GET_HASH_KEY(carModel)))
