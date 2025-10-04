@@ -70,6 +70,8 @@ namespace DiversePD.ivsdk
         private static int listNum;
         private static int vehCount;
 
+        private static uint gTimer;
+        private static uint fTimer;
         private static uint island;
 
         private static readonly List<string> vehModelsA = new List<string>();
@@ -175,23 +177,12 @@ namespace DiversePD.ivsdk
         private static List<int> TeefRainProps = new List<int>();
         private static List<int> FaceRainProps = new List<int>();
 
-        public static DelayedCalling TheDelayedCaller;
         private static eWeather Wthr;
         private static bool isRaining => (Wthr == eWeather.WEATHER_RAINING || Wthr == eWeather.WEATHER_LIGHTNING || Wthr == eWeather.WEATHER_DRIZZLE);
         public Main()
         {
-            Uninitialize += Main_Uninitialize;
             Initialized += Main_Initialized;
             Tick += Main_Tick;
-            TheDelayedCaller = new DelayedCalling();
-        }
-        private void Main_Uninitialize(object sender, EventArgs e)
-        {
-            if (TheDelayedCaller != null)
-            {
-                TheDelayedCaller.ClearAll();
-                TheDelayedCaller = null;
-            }
         }
         private void Main_Initialized(object sender, EventArgs e)
         {
@@ -947,6 +938,7 @@ namespace DiversePD.ivsdk
             SET_PED_PATH_MAY_USE_CLIMBOVERS(pedHandle, true);
             SET_PED_PATH_MAY_USE_LADDERS(pedHandle, true);
 
+            MARK_MODEL_AS_NO_LONGER_NEEDED(GET_HASH_KEY(pModel));
             MARK_CHAR_AS_NO_LONGER_NEEDED(pedHandle);
         }
         private void Main_Tick(object sender, EventArgs e)
@@ -957,6 +949,7 @@ namespace DiversePD.ivsdk
             PlayerPos = PlayerPed.Matrix.Pos;
 
             currEp = GET_CURRENT_EPISODE();
+            GET_GAME_TIMER(out gTimer);
 
             if (!isSpawning)
             {
@@ -973,18 +966,21 @@ namespace DiversePD.ivsdk
                     if (!CheckEpisodeVehicle(vehModelsA[listNum]))
                     {
                         ClearSpawnConditions();
+                        if (debug)
+                            IVGame.ShowSubtitleMessage(vehModelsA[listNum] + " cannot spawn in this episode.");
                         return;
                     }
                     if (!CheckVehicle(vehModelsA[listNum]))
                     {
                         ClearSpawnConditions();
+                        if (debug)
+                            IVGame.ShowSubtitleMessage(vehModelsA[listNum] + " cannot spawn in this island.");
                         return;
                     }
 
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsA[listNum];
 
                         driverModel = driverModelsA[listNum];
@@ -996,7 +992,9 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapA[listNum];
                         p2Weap = (int)pass2WeapA[listNum];
                         p3Weap = (int)pass3WeapA[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
 
@@ -1022,7 +1020,6 @@ namespace DiversePD.ivsdk
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsB[listNum];
 
                         driverModel = driverModelsB[listNum];
@@ -1034,7 +1031,9 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapB[listNum];
                         p2Weap = (int)pass2WeapB[listNum];
                         p3Weap = (int)pass3WeapB[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
 
@@ -1060,7 +1059,6 @@ namespace DiversePD.ivsdk
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsC[listNum];
 
                         driverModel = driverModelsC[listNum];
@@ -1072,7 +1070,9 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapC[listNum];
                         p2Weap = (int)pass2WeapC[listNum];
                         p3Weap = (int)pass3WeapC[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
 
@@ -1098,7 +1098,6 @@ namespace DiversePD.ivsdk
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsD[listNum];
 
                         driverModel = driverModelsD[listNum];
@@ -1110,7 +1109,9 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapD[listNum];
                         p2Weap = (int)pass2WeapD[listNum];
                         p3Weap = (int)pass3WeapD[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
 
@@ -1136,7 +1137,6 @@ namespace DiversePD.ivsdk
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsE[listNum];
 
                         driverModel = driverModelsE[listNum];
@@ -1148,7 +1148,9 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapE[listNum];
                         p2Weap = (int)pass2WeapE[listNum];
                         p3Weap = (int)pass3WeapE[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
 
@@ -1174,7 +1176,6 @@ namespace DiversePD.ivsdk
                     else
                     {
                         ClearSpawnConditions();
-                        isSpawning = true;
                         carModel = vehModelsF[listNum];
 
                         driverModel = driverModelsF[listNum];
@@ -1186,11 +1187,14 @@ namespace DiversePD.ivsdk
                         p1Weap = (int)pass1WeapF[listNum];
                         p2Weap = (int)pass2WeapF[listNum];
                         p3Weap = (int)pass3WeapF[listNum];
-                        SpawnPigs();
+
+                        GET_GAME_TIMER(out fTimer);
+                        isSpawning = true;
                     }
                 }
             }
-            TheDelayedCaller.Process();
+            else
+                SpawnPigs();
         }
         private void SpawnPigs()
         {
@@ -1209,11 +1213,12 @@ namespace DiversePD.ivsdk
             if (!HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
                 REQUEST_MODEL(GET_HASH_KEY(pass3Model));
 
-            TheDelayedCaller.Add(TimeSpan.FromSeconds(timeToSpawn), "Main", () =>
+            if (gTimer >= (fTimer + (timeToSpawn * 1000)))
             {
                 if (HAS_MODEL_LOADED(GET_HASH_KEY(carModel)) && HAS_MODEL_LOADED(GET_HASH_KEY(driverModel)))
                 {
                     CREATE_CAR(GET_HASH_KEY(carModel), PlayerPos.Around(SpawnDist), out v, true);
+                    MARK_MODEL_AS_NO_LONGER_NEEDED(GET_HASH_KEY(carModel));
 
                     GET_CAR_COORDINATES(v, out vPos);
                     GET_CLOSEST_CAR_NODE_WITH_HEADING(vPos, out nodePos, out nodeHdng);
@@ -1261,7 +1266,9 @@ namespace DiversePD.ivsdk
 
                     isSpawning = false;
                 }
-            });
+                else
+                    isSpawning = false;
+            }
         }
     }
 }
