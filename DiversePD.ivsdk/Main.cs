@@ -1217,47 +1217,66 @@ namespace DiversePD.ivsdk
             {
                 if (HAS_MODEL_LOADED(GET_HASH_KEY(carModel)) && HAS_MODEL_LOADED(GET_HASH_KEY(driverModel)))
                 {
-                    CREATE_CAR(GET_HASH_KEY(carModel), PlayerPos.Around(SpawnDist), out v, true);
-                    MARK_MODEL_AS_NO_LONGER_NEEDED(GET_HASH_KEY(carModel));
 
-                    GET_CAR_COORDINATES(v, out vPos);
-                    GET_CLOSEST_CAR_NODE_WITH_HEADING(vPos, out nodePos, out nodeHdng);
-                    SET_CAR_COORDINATES(v, nodePos);
-                    SET_CAR_HEADING(v, nodeHdng);
-                    SET_CAR_FORWARD_SPEED(v, 10f);
-                    veh = NativeWorld.GetVehicleInstanceFromHandle(v);
-                    veh.PlaceOnGroundProperly();
-
-                    CREATE_CHAR_INSIDE_CAR(v, 3, (uint)GET_HASH_KEY(driverModel), out p1);
-
-                    SpawnPedInVeh(driverModel, p1, dWeap);
-
-                    if (veh.GetMaximumNumberOfPassengers() > 0)
+                    //if (GET_CLOSEST_ROAD(PlayerPos.Around(SpawnDist).X, PlayerPos.Around(SpawnDist).Y, PlayerPos.Around(SpawnDist).Z, 10.0f, 2, out Vector3 sNode, out Vector3 nNode, out float sRoad, out float nRoad, out float cWidth))
+                    if (GET_RANDOM_CAR_NODE(PlayerPos.Around(SpawnDist).X, PlayerPos.Around(SpawnDist).Y, PlayerPos.Around(SpawnDist).Z, 10.0f, true, true, false, out nodePos.X, out nodePos.Y, out nodePos.Z, out nodeHdng))
                     {
-                        if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
-                            CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
+                        //GET_CLOSEST_MAJOR_CAR_NODE(PlayerPos.Around(SpawnDist), out nodePos);
+                        /*GET_CLOSEST_CAR_NODE_WITH_HEADING(sNode, out nodePos, out nodeHdng);
+                        if ((nodePos - PlayerPos).Length() < SpawnDist)
+                            GET_CLOSEST_CAR_NODE_WITH_HEADING(nNode, out nodePos, out nodeHdng);*/
 
-                        SpawnPedInVeh(pass1Model, p2, p1Weap);
-
-                        if (veh.GetMaximumNumberOfPassengers() > 1)
+                        if ((nodePos - PlayerPos).Length() >= SpawnDist)
                         {
-                            if (HAS_MODEL_LOADED(GET_HASH_KEY(pass2Model)))
-                                CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
+                            CREATE_CAR(GET_HASH_KEY(carModel), nodePos, out v, true);
+                            MARK_MODEL_AS_NO_LONGER_NEEDED(GET_HASH_KEY(carModel));
 
-                            SpawnPedInVeh(pass2Model, p3, p2Weap);
-                        }
-                        if (veh.GetMaximumNumberOfPassengers() > 2)
-                        {
-                            if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
-                                CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
+                            SET_CAR_COORDINATES(v, nodePos);
+                            SET_CAR_HEADING(v, nodeHdng);
+                            SET_CAR_FORWARD_SPEED(v, 5f);
+                            veh = NativeWorld.GetVehicleInstanceFromHandle(v);
+                            veh.PlaceOnGroundProperly();
 
-                            SpawnPedInVeh(pass3Model, p4, p3Weap);
+                            CREATE_CHAR_INSIDE_CAR(v, 3, (uint)GET_HASH_KEY(driverModel), out p1);
+
+                            SpawnPedInVeh(driverModel, p1, dWeap);
+
+                            if (veh.GetMaximumNumberOfPassengers() > 0)
+                            {
+                                if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
+                                    CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
+
+                                SpawnPedInVeh(pass1Model, p2, p1Weap);
+
+                                if (veh.GetMaximumNumberOfPassengers() > 1)
+                                {
+                                    if (HAS_MODEL_LOADED(GET_HASH_KEY(pass2Model)))
+                                        CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
+
+                                    SpawnPedInVeh(pass2Model, p3, p2Weap);
+                                }
+                                if (veh.GetMaximumNumberOfPassengers() > 2)
+                                {
+                                    if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
+                                        CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
+
+                                    SpawnPedInVeh(pass3Model, p4, p3Weap);
+                                }
+                            }
+
+                            MARK_CAR_AS_NO_LONGER_NEEDED(v);
+                            if (debug)
+                                IVGame.ShowSubtitleMessage("Spawned " + carModel + " " + (nodePos - PlayerPos).Length() + " meters from player. Vehicle " + (vehType + 1).ToString() + " out of " + vehCount.ToString() + ".");
                         }
+                        else
+                            return;
                     }
-                    if (debug)
-                        IVGame.ShowSubtitleMessage("Spawned " + carModel + "  " + vehType.ToString() + "  " + vehCount.ToString());
-
-                    MARK_CAR_AS_NO_LONGER_NEEDED(v);
+                    else
+                    {
+                        if (debug)
+                            IVGame.ShowSubtitleMessage("No acceptable paths detected, recalculating...");
+                        return;
+                    }
 
                     if (vehType < (vehCount - 1))
                         vehType++;
@@ -1267,7 +1286,7 @@ namespace DiversePD.ivsdk
                     isSpawning = false;
                 }
                 else
-                    isSpawning = false;
+                    return;
             }
         }
     }
