@@ -50,7 +50,7 @@ namespace DiversePD.ivsdk
         private static int p3Weap;
 
         private static bool isSpawning;
-        private static int timeToSpawn;
+        private static int timeToSpawn = 20;
         private static float SpawnDist;
         private static bool OneStarOn;
         private static bool TwoStarOn;
@@ -190,7 +190,6 @@ namespace DiversePD.ivsdk
         }
         private void LoadINI(SettingsFile settings)
         {
-            timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn", 20);
             SpawnDist = settings.GetFloat("MAIN", "Spawn Distance", 120f);
             OneStarOn = settings.GetBoolean("1 STAR", "Enable", false);
             TwoStarOn = settings.GetBoolean("2 STAR", "Enable", false);
@@ -941,6 +940,23 @@ namespace DiversePD.ivsdk
             MARK_MODEL_AS_NO_LONGER_NEEDED(GET_HASH_KEY(pModel));
             MARK_CHAR_AS_NO_LONGER_NEEDED(pedHandle);
         }
+        private void GetSpawnTime(SettingsFile settings)
+        {
+            if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 0))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Zero Star", 30);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 1))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn One Star", 24);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 2))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Two Star", 20);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 3))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Three Star", 20);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 4))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Four Star", 20);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 5))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Five Star", 20);
+            else if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 6))
+                timeToSpawn = settings.GetInteger("MAIN", "Time to Spawn Six Star", 20);
+        }
         private void Main_Tick(object sender, EventArgs e)
         {
             PlayerPed = IVPed.FromUIntPtr(IVPlayerInfo.FindThePlayerPed());
@@ -953,6 +969,7 @@ namespace DiversePD.ivsdk
 
             if (!isSpawning)
             {
+                GetSpawnTime(Settings);
                 island = GET_MAP_AREA_FROM_COORDS(PlayerPos.X, PlayerPos.Y, PlayerPos.Z);
 
                 if (!IS_WANTED_LEVEL_GREATER(PlayerIndex, 1) && OneStarOn)
