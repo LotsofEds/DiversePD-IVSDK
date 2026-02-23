@@ -1258,21 +1258,21 @@ namespace DiversePD.ivsdk
 
                             SpawnPedInVeh(driverModel, p1, dWeap);
 
-                            if (veh.GetMaximumNumberOfPassengers() > 0)
+                            if (veh.GetMaximumNumberOfPassengers() > 0 && pass1Model != "none")
                             {
                                 if (HAS_MODEL_LOADED(GET_HASH_KEY(pass1Model)))
                                     CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass1Model), 0, out p2);
 
                                 SpawnPedInVeh(pass1Model, p2, p1Weap);
 
-                                if (veh.GetMaximumNumberOfPassengers() > 1)
+                                if (veh.GetMaximumNumberOfPassengers() > 1 && pass2Model != "none")
                                 {
                                     if (HAS_MODEL_LOADED(GET_HASH_KEY(pass2Model)))
                                         CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass2Model), 1, out p3);
 
                                     SpawnPedInVeh(pass2Model, p3, p2Weap);
                                 }
-                                if (veh.GetMaximumNumberOfPassengers() > 2)
+                                if (veh.GetMaximumNumberOfPassengers() > 2 && pass3Model != "none")
                                 {
                                     if (HAS_MODEL_LOADED(GET_HASH_KEY(pass3Model)))
                                         CREATE_CHAR_AS_PASSENGER(v, 3, (uint)GET_HASH_KEY(pass3Model), 2, out p4);
